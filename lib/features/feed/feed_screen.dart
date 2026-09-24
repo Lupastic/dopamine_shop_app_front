@@ -19,7 +19,8 @@ class _FeedScreenState extends State<FeedScreen> {
   final _discountProducts = <Product>[];
   String? _cursor;
   bool _loading = true;
-  String? _selectedCategory;
+  String? _selectedCategoryId;
+  String? _selectedCategoryName;
   final _searchController = TextEditingController();
 
   @override
@@ -38,7 +39,7 @@ class _FeedScreenState extends State<FeedScreen> {
       final response = await ApiClient.instance.dio.get(
         '/products',
         queryParameters: {
-          if (_selectedCategory != null) 'category': _selectedCategory,
+          if (_selectedCategoryId != null) 'category': _selectedCategoryId,
         },
       );
       final items = (response.data['items'] as List<dynamic>)
@@ -65,7 +66,7 @@ class _FeedScreenState extends State<FeedScreen> {
       '/products',
       queryParameters: {
         'cursor': _cursor,
-        if (_selectedCategory != null) 'category': _selectedCategory,
+        if (_selectedCategoryId != null) 'category': _selectedCategoryId,
       },
     );
     final items = (response.data['items'] as List<dynamic>)
@@ -88,11 +89,17 @@ class _FeedScreenState extends State<FeedScreen> {
     context.push('/product-details', extra: product);
   }
 
-  void _selectCategory(String? category) {
-    if (_selectedCategory == category) {
-      setState(() => _selectedCategory = null);
+  void _selectCategory(String id, String name) {
+    if (_selectedCategoryId == id) {
+      setState(() {
+        _selectedCategoryId = null;
+        _selectedCategoryName = null;
+      });
     } else {
-      setState(() => _selectedCategory = category);
+      setState(() {
+        _selectedCategoryId = id;
+        _selectedCategoryName = name;
+      });
     }
     _loadInitialData();
   }
@@ -116,8 +123,8 @@ class _FeedScreenState extends State<FeedScreen> {
               padding: const EdgeInsets.fromLTRB(16, 24, 16, 8),
               sliver: SliverToBoxAdapter(
                 child: Text(
-                  _selectedCategory != null
-                      ? 'Категория: $_selectedCategory'
+                  _selectedCategoryName != null
+                      ? 'Категория: $_selectedCategoryName'
                       : 'Рекомендации для вас',
                   style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                 ),
@@ -135,6 +142,7 @@ class _FeedScreenState extends State<FeedScreen> {
                   padding: const EdgeInsets.all(16.0),
                   child: FilledButton(
                     onPressed: _loading ? null : _loadMore,
+                    style: FilledButton.styleFrom(backgroundColor: Colors.red),
                     child: _loading
                         ? const SizedBox(
                             height: 20,
@@ -249,63 +257,59 @@ class _FeedScreenState extends State<FeedScreen> {
 
   Widget _buildCategories() {
     final categories = [
-      {'name': 'Одежда', 'icon': Icons.checkroom},
-      {'name': 'Обувь', 'icon': Icons.ice_skating},
-      {'name': 'Компьютеры', 'icon': Icons.laptop},
-      {'name': 'Техника', 'icon': Icons.kitchen},
-      {'name': 'Мебель', 'icon': Icons.chair},
-      {'name': 'Аптека', 'icon': Icons.medical_services},
-      {'name': 'Гаджеты', 'icon': Icons.smartphone},
-      {'name': 'Красота', 'icon': Icons.face},
+      {'id': 'mens-shirts', 'name': 'Одежда', 'icon': Icons.checkroom},
+      {'id': 'mens-shoes', 'name': 'Обувь', 'icon': Icons.ice_skating},
+      {'id': 'laptops', 'name': 'Ноутбуки', 'icon': Icons.laptop},
+      {'id': 'mens-watches', 'name': 'Часы', 'icon': Icons.watch},
+      {'id': 'mobile-accessories', 'name': 'Аксессуары', 'icon': Icons.headphones},
     ];
 
     return SliverToBoxAdapter(
       child: Container(
-        height: 200,
+        height: 110,
         padding: const EdgeInsets.symmetric(vertical: 16),
-        child: GridView.builder(
+        child: ListView.builder(
           scrollDirection: Axis.horizontal,
           padding: const EdgeInsets.symmetric(horizontal: 16),
-          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 2,
-            mainAxisSpacing: 16,
-            crossAxisSpacing: 8,
-            childAspectRatio: 1.1,
-          ),
           itemCount: categories.length,
           itemBuilder: (context, index) {
-            final name = categories[index]['name'] as String;
-            final isSelected = _selectedCategory == name;
+            final cat = categories[index];
+            final id = cat['id'] as String;
+            final name = cat['name'] as String;
+            final isSelected = _selectedCategoryId == id;
             return GestureDetector(
-              onTap: () => _selectCategory(name),
-              child: Column(
-                children: [
-                  Container(
-                    width: 56,
-                    height: 56,
-                    decoration: BoxDecoration(
-                      color: isSelected ? Colors.red[100] : Colors.white,
-                      borderRadius: BorderRadius.circular(16),
-                      border: isSelected ? Border.all(color: Colors.red, width: 2) : null,
+              onTap: () => _selectCategory(id, name),
+              child: Container(
+                margin: const EdgeInsets.only(right: 20),
+                child: Column(
+                  children: [
+                    Container(
+                      width: 56,
+                      height: 56,
+                      decoration: BoxDecoration(
+                        color: isSelected ? Colors.red[100] : Colors.white,
+                        borderRadius: BorderRadius.circular(16),
+                        border: isSelected ? Border.all(color: Colors.red, width: 2) : null,
+                      ),
+                      child: Icon(
+                        cat['icon'] as IconData,
+                        size: 28,
+                        color: isSelected ? Colors.red : Colors.black87,
+                      ),
                     ),
-                    child: Icon(
-                      categories[index]['icon'] as IconData,
-                      size: 28,
-                      color: isSelected ? Colors.red : Colors.black87,
+                    const SizedBox(height: 6),
+                    Text(
+                      name,
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                        color: isSelected ? Colors.red : Colors.black87,
+                      ),
+                      textAlign: TextAlign.center,
+                      maxLines: 1,
                     ),
-                  ),
-                  const SizedBox(height: 6),
-                  Text(
-                    name,
-                    style: TextStyle(
-                      fontSize: 11,
-                      fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                      color: isSelected ? Colors.red : Colors.black87,
-                    ),
-                    textAlign: TextAlign.center,
-                    maxLines: 1,
-                  ),
-                ],
+                  ],
+                ),
               ),
             );
           },

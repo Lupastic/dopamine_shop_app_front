@@ -8,6 +8,7 @@ import 'features/feed/feed_screen.dart';
 import 'features/orders/orders_screen.dart';
 import 'features/profile/addresses_screen.dart';
 import 'features/profile/profile_screen.dart';
+import 'features/catalog/catalog_screen.dart';
 import 'features/feed/product.dart';
 import 'features/feed/product_details_screen.dart';
 import 'shared/app_shell.dart';
@@ -36,8 +37,7 @@ final _router = GoRouter(
         GoRoute(path: '/feed', builder: (context, state) => const FeedScreen()),
         GoRoute(
           path: '/catalog',
-          builder: (context, state) =>
-              const Scaffold(body: Center(child: Text('Каталог'))),
+          builder: (context, state) => const CatalogScreen(),
         ),
         GoRoute(
           path: '/favorites',

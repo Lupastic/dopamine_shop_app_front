@@ -105,7 +105,13 @@ class _CartScreenState extends State<CartScreen> {
     try {
       await ApiClient.instance.dio.delete('/cart/items/$productId');
       _loadData();
-    } catch (e) {}
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Не удалось удалить товар из корзины')),
+        );
+      }
+    }
   }
 
   @override

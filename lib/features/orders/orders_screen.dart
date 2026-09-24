@@ -76,9 +76,41 @@ class _OrdersScreenState extends State<OrdersScreen> {
     );
   }
 
+  String _translateStatus(String status) {
+    switch (status) {
+      case 'PROCESSING':
+        return 'В обработке';
+      case 'SORTING':
+        return 'Сортировка';
+      case 'IN_TRANSIT':
+        return 'В пути';
+      case 'ARRIVED':
+      case 'COMPLETED':
+        return 'Доставлен';
+      default:
+        return status;
+    }
+  }
+
+  Color _getStatusColor(String status) {
+    switch (status) {
+      case 'PROCESSING':
+        return Colors.blue;
+      case 'SORTING':
+        return Colors.orange;
+      case 'IN_TRANSIT':
+        return Colors.deepPurple;
+      case 'ARRIVED':
+      case 'COMPLETED':
+        return Colors.green;
+      default:
+        return Colors.grey;
+    }
+  }
+
   Widget _buildOrderCard(Map<String, dynamic> order) {
     final status = order['status'] as String;
-    final color = status == 'COMPLETED' ? Colors.green : Colors.orange;
+    final color = _getStatusColor(status);
 
     return Container(
       decoration: BoxDecoration(
@@ -94,7 +126,7 @@ class _OrdersScreenState extends State<OrdersScreen> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  'Заказ от ${order['createdAt']?.toString().split('T')[0] ?? 'недавно'}',
+                  'Заказ от ${order['placedAt']?.toString().split('T')[0] ?? 'недавно'}',
                   style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                 ),
                 Container(
@@ -104,7 +136,7 @@ class _OrdersScreenState extends State<OrdersScreen> {
                     borderRadius: BorderRadius.circular(4),
                   ),
                   child: Text(
-                    status,
+                    _translateStatus(status),
                     style: TextStyle(color: color, fontWeight: FontWeight.bold, fontSize: 12),
                   ),
                 ),
@@ -129,7 +161,7 @@ class _OrdersScreenState extends State<OrdersScreen> {
                     const Icon(Icons.check_circle_outline, size: 14, color: Colors.grey),
                     const SizedBox(width: 8),
                     Text(
-                      '${step['status']} - ${step['changedAt']?.toString().split('T')[0] ?? ''}',
+                      '${_translateStatus(step['status'] ?? '')} - ${step['changedAt']?.toString().split('T')[0] ?? ''}',
                       style: const TextStyle(fontSize: 12, color: Colors.black54),
                     ),
                   ],
